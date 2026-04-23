@@ -66,8 +66,7 @@ jobs:
                   "pwds": pwds_str
               })
 
-          if chunks:
-              chunks = [random.choice(chunks)]
+          random.shuffle(chunks)
 
           matrix_json = json.dumps(chunks)
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
