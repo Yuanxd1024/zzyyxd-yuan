@@ -34,7 +34,7 @@ except ImportError:
 
 # ======================== 全局变量 ========================
 in_summary = False
-summary_logs = []
+summary_logs =[]
 
 # 代理相关全局状态
 GLOBAL_PROXY_DISABLE = False
@@ -94,7 +94,7 @@ def get_valid_proxy(account_proxy_fails):
                 port = p_info.get("port")
                 city = p_info.get("city", "未知位置")
                 proxy_str = f"http://{ip}:{port}"
-                log(f"🔗 成功获取到代理: {ip}:{port} [位置: {city}]，正在发送请求...")
+                log(f"🔗 成功获取到代理: {ip}:{port}[位置: {city}]，正在发送请求...")
                 return proxy_str, account_proxy_fails
             else:
                 log(f"⚠ 获取代理失败，API返回内容: {data}")
@@ -835,7 +835,7 @@ def get_koi_cards(driver, secretkey, max_retries=3):
 def process_single_account(username, password, account_index, total_accounts, start_pwd_idx=0):
     """处理单个账号的完整流程，包含密码重试及断点记忆"""
     global CONSECUTIVE_PROXY_ACCOUNT_FAILS, GLOBAL_PROXY_DISABLE
-    backup_passwords = [
+    backup_passwords =[
         "Aa123123",
         "Zz123123",
         "Qq123123",
@@ -855,6 +855,7 @@ def process_single_account(username, password, account_index, total_accounts, st
 
     result = {
         "account_index": account_index,
+        "username": username,
         "password_error": False,
         "login_error": False,
         "has_error": False,
@@ -871,7 +872,7 @@ def process_single_account(username, password, account_index, total_accounts, st
         "lottery_after_points": None,
         "lottery_status": None,     # success / skipped / failed
         "lottery_skip_reason": None,
-        "lottery_prizes": [],
+        "lottery_prizes":[],
         "lottery_error_msg": None,
         # 最终
         "final_points": None,
@@ -1287,7 +1288,7 @@ def push_summary(push_text, title=None):
 
 def has_any_push_config():
     """检查是否配置了任何推送渠道"""
-    keys = [
+    keys =[
         "TELEGRAM_BOT_TOKEN", "WECHAT_WEBHOOK_KEY", "DINGTALK_WEBHOOK",
         "PUSHPLUS_TOKEN", "SERVERCHAN_SCKEY", "SERVERCHAN3_SCKEY",
         "COOLPUSH_SKEY", "CUSTOM_WEBHOOK",
@@ -1299,15 +1300,15 @@ def main():
     global in_summary
 
     if len(sys.argv) < 3:
-        print("用法: python bbs_sign.py 账号1,账号2... 密码1,密码2... [失败退出标志] [账号组编号]")
+        print("用法: python bbs_sign.py 账号1,账号2... 密码1,密码2...[失败退出标志] [账号组编号]")
         print("示例: python bbs_sign.py user1,user2 pwd1,pwd2")
         print("示例: python bbs_sign.py user1,user2 pwd1,pwd2 true")
         print("示例: python bbs_sign.py user1,user2 pwd1,pwd2 true 4")
         print("账号组编号: 只能输入数字，输入其他值则忽略")
         sys.exit(1)
 
-    usernames = [u.strip() for u in sys.argv[1].split(",") if u.strip()]
-    passwords = [p.strip() for p in sys.argv[2].split(",") if p.strip()]
+    usernames =[u.strip() for u in sys.argv[1].split(",") if u.strip()]
+    passwords =[p.strip() for p in sys.argv[2].split(",") if p.strip()]
 
     fail_exit = False
     if len(sys.argv) >= 4:
@@ -1326,7 +1327,7 @@ def main():
     total = len(usernames)
     log(f"检测到 {total} 个账号需要处理，失败退出功能已{'开启' if fail_exit else '关闭'}", show_time=False)
 
-    all_results = []
+    all_results =[]
 
     for i, (username, password) in enumerate(zip(usernames, passwords), 1):
         log(f"\n{'='*50}", show_time=False)
@@ -1350,19 +1351,19 @@ def main():
         log("📊 嘉立创BBS签到 & 抽奖 结果总结", show_time=False)
     log("=" * 60, show_time=False)
 
-    push_reasons = []
+    push_reasons =[]
     any_error = False
 
     for res in all_results:
-        idx = res["account_index"]
+        uname = res.get("username", res["account_index"])
         log("--------------------------------------------------", show_time=False)
-        log(f"账号{idx}:", show_time=False)
+        log(f"账号{uname}:", show_time=False)
 
         # === 密码错误 ===
         if res.get("password_error"):
             log("├── 状态: ❌ 账号或密码错误，已跳过", show_time=False)
             any_error = True
-            push_reasons.append(f"账号{idx}密码错误")
+            push_reasons.append(f"账号{uname}密码错误")
             log("--------------------------------------------------", show_time=False)
             continue
 
@@ -1370,7 +1371,7 @@ def main():
         if res.get("login_error"):
             log(f"├── 状态: ❌ 登录失败 ({res.get('error_msg', '未知')})", show_time=False)
             any_error = True
-            push_reasons.append(f"账号{idx}登录异常")
+            push_reasons.append(f"账号{uname}登录异常")
             log("--------------------------------------------------", show_time=False)
             continue
 
@@ -1392,16 +1393,16 @@ def main():
         elif sign_status == "failed":
             sign_str = f"签到失败，原因: {res.get('sign_error_msg', '未知')}"
             any_error = True
-            push_reasons.append(f"账号{idx}签到失败")
+            push_reasons.append(f"账号{uname}签到失败")
         elif res.get("has_error") and res.get("error_msg"):
             sign_str = f"运行异常: {res.get('error_msg')}"
             any_error = True
-            push_reasons.append(f"账号{idx}运行失败")
+            push_reasons.append(f"账号{uname}运行失败")
         else:
             sign_str = "未执行"
             if res.get("has_error"):
                 any_error = True
-                push_reasons.append(f"账号{idx}运行失败")
+                push_reasons.append(f"账号{uname}运行失败")
 
         log(f"├── 签到积分变化: {sign_str}", show_time=False)
 
@@ -1424,7 +1425,7 @@ def main():
             err_msg = res.get("lottery_error_msg", "")
             if "积分" not in err_msg and "次数" not in err_msg:
                 any_error = True
-                push_reasons.append(f"账号{idx}抽奖异常")
+                push_reasons.append(f"账号{uname}抽奖异常")
         else:
             lottery_str = "未执行"
 
@@ -1447,20 +1448,20 @@ def main():
             log(f"├── 鲤鱼卡数量: 获取失败，原因: {err}", show_time=False)
 
         # === 抽奖奖品 ===
-        for pi, prize in enumerate(res.get("lottery_prizes", []), 1):
+        for pi, prize in enumerate(res.get("lottery_prizes",[]), 1):
             log(f"├── 抽奖{pi}奖品: {prize}", show_time=False)
             # 检查是否中了非积分且非鲤鱼卡的奖品
             if "积分" not in prize and "鲤鱼卡" not in prize:
-                push_reasons.append(f"账号{idx}中奖{prize}")
+                push_reasons.append(f"账号{uname}中奖{prize}")
 
         log("--------------------------------------------------", show_time=False)
 
     # === 整体异常判断（处理 has_error 但前面可能未捕获的情况）===
     for res in all_results:
-        idx = res["account_index"]
+        uname = res.get("username", res["account_index"])
         if res.get("has_error") and not res.get("password_error") and not res.get("login_error"):
-            reason_str = f"账号{idx}运行失败"
-            if reason_str not in push_reasons and f"账号{idx}签到失败" not in push_reasons and f"账号{idx}抽奖异常" not in push_reasons:
+            reason_str = f"账号{uname}运行失败"
+            if reason_str not in push_reasons and f"账号{uname}签到失败" not in push_reasons and f"账号{uname}抽奖异常" not in push_reasons:
                 any_error = True
                 push_reasons.append(reason_str)
 
