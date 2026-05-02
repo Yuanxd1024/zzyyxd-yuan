@@ -9,7 +9,7 @@ on:
 jobs:
   # ==================================================================================
   # 数据预处理
-  # 读取 Secret JLC_ACCOUNT，清洗数据，按100个一组生成矩阵 JSON
+  # 读取 Secret JLC_BBS_ACCOUNT，清洗数据，按100个一组生成矩阵 JSON
   # ==================================================================================
   generate-matrix:
     runs-on: ubuntu-latest
@@ -19,7 +19,7 @@ jobs:
       - name: 解析账号并分组
         id: set-matrix
         env:
-          RAW_ACCOUNTS: ${{ secrets.JLC_ACCOUNT }}
+          RAW_ACCOUNTS: ${{ secrets.JLC_BBS_ACCOUNT }}
         shell: python
         run: |
           import os
